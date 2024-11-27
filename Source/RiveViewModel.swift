@@ -135,6 +135,24 @@ import Combine
         riveModel = RiveModel(webURL: webURL, delegate: self, loadCdn: loadCdn)
         defaultModel = RiveModelBuffer(artboardName: artboardName, stateMachineName: stateMachineName, animationName: nil)
     }
+
+    @objc public init(
+        data: Data,
+        artboardName: String? = nil,
+        stateMachineName: String? = nil,
+        animationName: String? = nil,
+        fit: RiveFit = .contain,
+        alignment: RiveAlignment = .center,
+        autoPlay: Bool = true,
+        loadCdn: Bool = true
+    ) throws {
+        self.fit = fit
+        self.alignment = alignment
+        self.autoPlay = autoPlay
+        super.init()
+        riveModel = try RiveModel(data: data, loadCdn: loadCdn)
+        sharedInit(artboardName: artboardName, stateMachineName: stateMachineName, animationName: animationName)
+    }
     
     @objc public init(
         webURL: String,
