@@ -31,7 +31,7 @@ Pod::Spec.new do |spec|
   spec.osx.deployment_target  = '13.1'
   spec.swift_version          = '5.0'
   spec.source       = { 
-    :http => "https://github.com/rive-app/rive-ios/releases/download/6.3.9/RiveRuntime.xcframework.zip",
+    :http => "https://github.com/mybigday/rive-ios/releases/download/bricks-6.3.9/RiveRuntime.xcframework.zip",
   }
   spec.ios.vendored_frameworks = 'RiveRuntime.xcframework'
   spec.osx.vendored_frameworks = 'RiveRuntime.xcframework'
