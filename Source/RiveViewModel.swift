@@ -53,13 +53,13 @@ import Combine
         alignment: RiveAlignment = .center,
         autoPlay: Bool = true,
         artboardName: String? = nil
-    ) {
+    ) throws {
         self.fit = fit
         self.alignment = alignment
         self.autoPlay = autoPlay
         super.init()
         riveModel = model
-        sharedInit(artboardName: artboardName, stateMachineName: stateMachineName, animationName: nil)
+        try sharedInit(artboardName: artboardName, stateMachineName: stateMachineName, animationName: nil)
     }
     
     @objc public init(
@@ -69,13 +69,13 @@ import Combine
         alignment: RiveAlignment = .center,
         autoPlay: Bool = true,
         artboardName: String? = nil
-    ) {
+    ) throws {
         self.fit = fit
         self.alignment = alignment
         self.autoPlay = autoPlay
         super.init()
         riveModel = model
-        sharedInit(artboardName: artboardName, stateMachineName: nil, animationName: animationName)
+        try sharedInit(artboardName: artboardName, stateMachineName: nil, animationName: animationName)
     }
     
     @objc public init(
@@ -89,13 +89,13 @@ import Combine
         artboardName: String? = nil,
         loadCdn: Bool = true,
         customLoader: LoadAsset? = nil
-    ) {
+    ) throws {
         self.fit = fit
         self.alignment = alignment
         self.autoPlay = autoPlay
         super.init()
-        riveModel = try! RiveModel(fileName: fileName, extension: `extension`, in: bundle, loadCdn: loadCdn, customLoader:customLoader)
-        sharedInit(artboardName: artboardName, stateMachineName: stateMachineName, animationName: nil)
+        riveModel = try RiveModel(fileName: fileName, extension: `extension`, in: bundle, loadCdn: loadCdn, customLoader:customLoader)
+        try sharedInit(artboardName: artboardName, stateMachineName: stateMachineName, animationName: nil)
     }
     
     public init(
@@ -110,13 +110,13 @@ import Combine
         preferredFramesPerSecond: Int? = nil,
         loadCdn: Bool = true,
         customLoader: LoadAsset? = nil
-    ) {
+    ) throws {
         self.fit = fit
         self.alignment = alignment
         self.autoPlay = autoPlay
         super.init()
-        riveModel = try! RiveModel(fileName: fileName, extension: `extension`, in: bundle, loadCdn: loadCdn, customLoader:customLoader)
-        sharedInit(artboardName: artboardName, stateMachineName: nil, animationName: animationName)
+        riveModel = try RiveModel(fileName: fileName, extension: `extension`, in: bundle, loadCdn: loadCdn, customLoader:customLoader)
+        try sharedInit(artboardName: artboardName, stateMachineName: nil, animationName: animationName)
     }
     
     @objc public init(
@@ -127,13 +127,13 @@ import Combine
         autoPlay: Bool = true,
         loadCdn: Bool = true,
         artboardName: String? = nil
-    ) {
+    ) throws {
         self.fit = fit
         self.alignment = alignment
         self.autoPlay = autoPlay
         super.init()
         riveModel = RiveModel(webURL: webURL, delegate: self, loadCdn: loadCdn)
-        defaultModel = RiveModelBuffer(artboardName: artboardName, stateMachineName: stateMachineName, animationName: nil)
+        try sharedInit(artboardName: artboardName, stateMachineName: stateMachineName, animationName: nil)
     }
 
     @objc public init(
@@ -151,7 +151,7 @@ import Combine
         self.autoPlay = autoPlay
         super.init()
         riveModel = try RiveModel(data: data, loadCdn: loadCdn)
-        sharedInit(artboardName: artboardName, stateMachineName: stateMachineName, animationName: animationName)
+        try sharedInit(artboardName: artboardName, stateMachineName: stateMachineName, animationName: animationName)
     }
     
     @objc public init(
@@ -171,8 +171,8 @@ import Combine
         defaultModel = RiveModelBuffer(artboardName: artboardName, stateMachineName: nil, animationName: animationName)
     }
     
-    private func sharedInit(artboardName: String?, stateMachineName: String?, animationName: String?) {
-        try! configureModel(artboardName: artboardName, stateMachineName: stateMachineName, animationName: animationName)
+    private func sharedInit(artboardName: String?, stateMachineName: String?, animationName: String?) throws {
+        try configureModel(artboardName: artboardName, stateMachineName: stateMachineName, animationName: animationName)
         
         defaultModel = RiveModelBuffer(
             artboardName: artboardName,
@@ -180,7 +180,7 @@ import Combine
             animationName: animationName
         )
         
-        try! riveView?.setModel(riveModel!, autoPlay: autoPlay)
+        try riveView?.setModel(riveModel!, autoPlay: autoPlay)
     }
     
     // MARK: - RiveView
@@ -245,9 +245,9 @@ import Combine
     /// - Parameters:
     ///   - animationName: The name of a new Animation to play on the current Artboard
     ///   - loop: The loop mode for the active Animation
-    @objc open func play(animationName: String? = nil, loop: RiveLoop = .autoLoop, direction: RiveDirection = .autoDirection) {
+    @objc open func play(animationName: String? = nil, loop: RiveLoop = .autoLoop, direction: RiveDirection = .autoDirection) throws {
         if let name = animationName {
-            try! riveModel?.setAnimation(name)
+            try riveModel?.setAnimation(name)
         }
         
         if let animation = riveModel?.animation {
@@ -280,16 +280,16 @@ import Combine
     }
     
     /// Halts the active Animation or StateMachine and sets it at its starting position
-    @objc open func stop() {
+    @objc open func stop() throws {
         RiveLogger.log(viewModel: self, event: .stop)
-        resetCurrentModel()
+        try resetCurrentModel()
         riveView?.stop()
     }
     
     /// Sets the active Animation or StateMachine back to their starting position
-    @objc open func reset() {
+    @objc open func reset() throws {
         RiveLogger.log(viewModel: self, event: .reset)
-        resetCurrentModel()
+        try resetCurrentModel()
         riveView?.reset()
     }
     
@@ -334,13 +334,13 @@ import Combine
     }
     
     /// Puts the active Animation or StateMachine back to their starting position
-    private func resetCurrentModel() {
+    private func resetCurrentModel() throws {
         guard let model = riveModel else {
             let errorMessage = "Current model is nil"
             RiveLogger.log(viewModel: self, event: .fatalError(errorMessage))
             fatalError(errorMessage)
         }
-        try! configureModel(
+        try configureModel(
             artboardName: model.artboard.name(),
             stateMachineName: model.stateMachine?.name(),
             animationName: model.animation?.name()
@@ -348,8 +348,8 @@ import Combine
     }
     
     /// Sets the Artboard, StateMachine or Animation back to the first one given to the RiveViewModel
-    @objc open func resetToDefaultModel() {
-        try! configureModel(
+    @objc open func resetToDefaultModel() throws {
+        try configureModel(
             artboardName: defaultModel.artboardName,
             stateMachineName: defaultModel.stateMachineName,
             animationName: defaultModel.animationName
@@ -362,7 +362,11 @@ import Combine
     @objc open func triggerInput(_ inputName: String) {
         RiveLogger.log(viewModel: self, event: .triggerInput(inputName, nil))
         riveModel?.stateMachine?.getTrigger(inputName).fire()
-        play()
+        do {
+            try play()
+        } catch {
+            RiveLogger.log(viewModel: self, event: .error("Cannot play after triggering input \(inputName)"))
+        }
     }
     
     /// Provide the active StateMachine a `Boolean` input
@@ -372,7 +376,11 @@ import Combine
     @objc(setBooleanInput::) open func setInput(_ inputName: String, value: Bool) {
         RiveLogger.log(viewModel: self, event: .booleanInput(inputName, nil, value))
         riveModel?.stateMachine?.getBool(inputName).setValue(value)
-        play()
+        do {
+            try play()
+        } catch {
+            RiveLogger.log(viewModel: self, event: .error("Cannot play after setting boolean input \(inputName)"))
+        }
     }
 
     /// Returns the current boolean input by name. Get its value by calling `.value` on the returned object.
@@ -394,7 +402,11 @@ import Combine
     @objc(setFloatInput::) open func setInput(_ inputName: String, value: Float) {
         RiveLogger.log(viewModel: self, event: .floatInput(inputName, nil, value))
         riveModel?.stateMachine?.getNumber(inputName).setValue(value)
-        play()
+        do {
+            try play()
+        } catch {
+            RiveLogger.log(viewModel: self, event: .error("Cannot play after setting float input \(inputName)"))
+        }
     }
 
     /// Provide the active StateMachine a `Number` input
@@ -425,7 +437,11 @@ import Combine
     open func triggerInput(_ inputName: String, path: String) {
         RiveLogger.log(viewModel: self, event: .triggerInput(inputName, path))
         riveModel?.artboard?.getTrigger(inputName, path: path).fire()
-        play()
+        do {
+            try play()
+        } catch {
+            RiveLogger.log(viewModel: self, event: .error("Cannot play after triggering input \(inputName)"))
+        }
     }
     
     /// Provide the specified nested Artboard with a `Boolean` input
@@ -436,7 +452,11 @@ import Combine
     open func setInput(_ inputName: String, value: Bool, path: String) {
         RiveLogger.log(viewModel: self, event: .booleanInput(inputName, path, value))
         riveModel?.artboard?.getBool(inputName, path: path).setValue(value)
-        play()
+        do {
+            try play()
+        } catch {
+            RiveLogger.log(viewModel: self, event: .error("Cannot play after setting boolean input \(inputName)"))
+        }
     }
     
     /// Provide the specified nested Artboard with a `Number` input
@@ -447,7 +467,11 @@ import Combine
     open func setInput(_ inputName: String, value: Float, path: String) {
         RiveLogger.log(viewModel: self, event: .floatInput(inputName, path, value))
         riveModel?.artboard?.getNumber(inputName, path: path).setValue(value);
-        play()
+        do {
+            try play()
+        } catch {
+            RiveLogger.log(viewModel: self, event: .error("Cannot play after setting float input \(inputName)"))
+        }
     }
     
     /// Provide the specified nested Artboard with a `Number` input
@@ -612,7 +636,7 @@ import Combine
     @objc open func riveFileDidLoad(_ riveFile: RiveFile) throws {
         riveModel = RiveModel(riveFile: riveFile)
         
-        sharedInit(
+        try sharedInit(
             artboardName: defaultModel.artboardName,
             stateMachineName: defaultModel.stateMachineName,
             animationName: defaultModel.animationName
